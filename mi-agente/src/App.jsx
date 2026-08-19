@@ -247,7 +247,7 @@ VITE_GEMINI_API_KEY
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
 
-`.env.local` funciona para desarrollo local.
+'.env.local' funciona para desarrollo local.
 
 Vercel necesita esas variables configuradas en:
 
