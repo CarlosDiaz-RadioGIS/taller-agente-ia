@@ -191,7 +191,7 @@ Responde utilizando Markdown.
 // UTILIDADES
 // ============================================================
 
-const STORAGE_KEY = "nexus_ai_chats";
+const STORAGE_KEY = "Profesor E3T IA_ai_chats";
 
 function createNewChat() {
   return {
@@ -607,7 +607,7 @@ El error exacto nos permitirá continuar el diagnóstico.
       <aside className="sidebar">
         <div className="sidebar-header">
           <div>
-            <h1>Nexus AI</h1>
+            <h1>Profesor E3T · IA</h1>
             <span>Asistente E3T</span>
           </div>
         </div>
@@ -742,7 +742,7 @@ El error exacto nos permitirá continuar el diagnóstico.
                   <div className="message-name">
                     {message.role === "user"
                       ? "Estudiante"
-                      : "Nexus AI"}
+                      : "Profesor E3T IA"}
                   </div>
 
                   <div className="message-content">
@@ -781,7 +781,7 @@ El error exacto nos permitirá continuar el diagnóstico.
 
               <div className="message-body">
                 <div className="message-name">
-                  Nexus AI
+                  Profesor E3T
                 </div>
 
                 <div className="typing">
