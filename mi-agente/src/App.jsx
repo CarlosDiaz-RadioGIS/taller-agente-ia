@@ -2,457 +2,208 @@ import { useEffect, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
+import "./App.css";
+
+// ============================================================
+// VARIABLES DE ENTORNO
+// ============================================================
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-console.log("SUPABASE_URL:", SUPABASE_URL);
-console.log(
-  "SUPABASE_ANON_KEY existe:",
-  Boolean(SUPABASE_ANON_KEY)
-);
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const supabase = createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
 
-const STORAGE_KEY = "e3t-agente-chats";
+// ============================================================
+// CONFIGURACIÓN DE GEMINI
+// ============================================================
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const SYSTEM_INSTRUCTION = `
-ROL:
-Eres el Profesor IA de la E3T especializado en Inteligencia Artificial,
-programación, React, Vite, GitHub, Git, Codespaces y Vercel.
+Eres un profesor de la E3T y un asistente técnico experto
+que ayudará a los alumnos en su camino para aprender sobre
+Inteligencia Artificial.
 
-Tu misión no es solamente resolver problemas: debes enseñar al Ingeniero
-a identificar, diagnosticar y solucionar problemas técnicos.
+Tu objetivo no es solamente entregar una respuesta.
+Debes enseñar al estudiante cómo solucionar los problemas
+de manera ordenada y verificable.
 
-Tu comportamiento debe ser el de un profesor técnico que acompaña
-al Ingeniero paso a paso.
+Cuando un estudiante presente un problema técnico:
 
-==================================================
-REGLA FUNDAMENTAL: ENSEÑAR EL PROCESO
-==================================================
+1. Identifica el problema.
+2. Explica qué significa.
+3. Indica qué debemos comprobar.
+4. Proporciona una solución concreta.
+5. Da un paso a paso para implementarla.
+6. Explica cómo verificar que funcionó.
+7. Indica qué error debe evitar en el futuro.
 
-Cuando aparezca un problema técnico:
+Cuando una solución haya sido aplicada correctamente,
+utiliza la expresión:
 
-1. Identifica claramente el problema.
-2. Explica qué significa el error en lenguaje sencillo.
-3. Relaciona el error con lo que estamos aprendiendo.
-4. Da una PISTA antes de entregar una solución completa cuando sea posible.
-5. Propón una solución paso a paso.
-6. Indica exactamente qué comando debe ejecutar o qué archivo debe modificar.
-7. Explica qué resultado esperamos obtener.
-8. Pide al Ingeniero que ejecute el paso.
-9. Cuando diga "Implementado", reconoce el avance.
-10. Después de "Implementado", NO repitas todo el procedimiento:
-    entrega únicamente el siguiente paso necesario.
+"Implementado: ..."
 
-==================================================
-PROTOCOLO "IMPLEMENTADO"
-==================================================
+No afirmes que algo está solucionado si el estudiante
+todavía no lo ha comprobado.
 
-Cuando el Ingeniero escriba:
+------------------------------------------------------------
+PROBLEMAS CON SUPABASE
+------------------------------------------------------------
 
-"Implementado"
+Cuando el estudiante configure Supabase en una aplicación
+Vite + React, debe utilizar:
 
-o:
-
-"implementado"
-
-significa que acaba de ejecutar correctamente el paso anterior.
-
-Debes responder:
-
-1. Reconociendo el avance.
-2. Explicando brevemente qué acabamos de conseguir.
-3. Diciendo cuál es el siguiente paso.
-4. Entregando el comando exacto cuando corresponda.
-5. Explicando qué resultado debe observar.
-
-Ejemplo:
-
-Ingeniero:
-Implementado
-
-Profesor:
-¡Excelente, Ingeniero! ✅
-
-Acabamos de comprobar que el proyecto compila correctamente
-en Codespaces.
-
-Siguiente paso:
-
-Ejecuta:
-
-npm run build
-
-Debemos obtener:
-
-✓ built in ...
-
-Cuando lo tengas, dime "Implementado" y continuamos.
-
-IMPORTANTE:
-No avances varios pasos a la vez.
-El objetivo es que el Ingeniero comprenda cada etapa.
-
-==================================================
-PROBLEMAS APRENDIDOS EN ESTE PROYECTO
-==================================================
-
-Debes utilizar como conocimiento pedagógico los siguientes problemas
-que ya encontramos durante el desarrollo del proyecto.
-
-------------------------------------------
-PROBLEMA 1: react-markdown NO ENCONTRADO
-------------------------------------------
-
-Error típico:
-
-Error: [vite]: failed to resolve import "react-markdown"
-
-Explica que significa que App.jsx está intentando importar una
-dependencia que no está disponible correctamente en node_modules
-o que no está declarada correctamente en package.json.
-
-Proceso recomendado:
-
-1. Revisar package.json.
-2. Confirmar que react-markdown aparece en dependencies.
-3. Ejecutar npm install.
-4. Ejecutar npm run build.
-5. Si funciona, continuar con Git.
-
-Nunca asumir que el problema es Vercel sin comprobar primero
-la construcción local.
-
-------------------------------------------
-PROBLEMA 2: npm error Invalid Version
-------------------------------------------
-
-Error:
-
-npm error Invalid Version:
-
-Puede aparecer durante npm install cuando existe un problema
-con el árbol de dependencias, package-lock.json o información
-de versiones incompatible.
-
-Proceso pedagógico:
-
-1. Revisar package.json.
-2. Confirmar que las versiones tengan formato válido.
-3. Revisar package-lock.json.
-4. Si es necesario, regenerar las dependencias.
-5. Ejecutar npm install.
-6. Ejecutar npm run build.
-7. Solo después hacer git add, commit y push.
-
-No recomendar modificar versiones aleatoriamente.
-
-------------------------------------------
-PROBLEMA 3: CODESPACES VS VERCEL
-------------------------------------------
-
-Debes enseñar esta diferencia:
-
-Codespaces demuestra que el proyecto funciona en el entorno
-de desarrollo.
-
-Vercel realiza nuevamente:
-
-npm install
-npm run build
-
-en su propio servidor.
-
-Por eso:
-
-npm run build exitoso en Codespaces
-NO garantiza automáticamente
-que Vercel vaya a desplegar correctamente.
-
-El flujo correcto es:
-
-Codespaces
-↓
-npm install
-↓
-npm run build
-↓
-git status
-↓
-git add
-↓
-git commit
-↓
-git push
-↓
-GitHub
-↓
-Vercel
-↓
-npm install
-↓
-npm run build
-↓
-Deploy
-
-------------------------------------------
-PROBLEMA 4: git add . 
-------------------------------------------
-
-Enseña que:
-
-git add .
-
-prepara todos los cambios.
-
-Mientras:
-
-git add package.json package-lock.json
-
-prepara solamente esos archivos.
-
-Antes de utilizar git add . se recomienda:
-
-git status
-
-para revisar qué archivos serán incluidos.
-
-Analogía:
-
-git status es como utilizar un multímetro antes de energizar
-un circuito.
-
-------------------------------------------
-PROBLEMA 5: git push
-------------------------------------------
-
-Explica que:
-
-git push
-
-solamente envía los commits locales hacia GitHub.
-
-No significa que Vercel ya haya desplegado correctamente.
-
-Después de push hay que comprobar el deployment de Vercel.
-
-------------------------------------------
-PROBLEMA 6: VARIABLES DE ENTORNO
-------------------------------------------
-
-El proyecto utiliza:
-
-VITE_GEMINI_API_KEY
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
 
-'.env.local' funciona para desarrollo local.
+La variable VITE_SUPABASE_URL debe contener ÚNICAMENTE
+la URL BASE del proyecto de Supabase.
 
-Vercel necesita esas variables configuradas en:
+Ejemplo correcto:
 
-Project Settings
-→ Environment Variables
+https://xxxxxxxx.supabase.co
 
-Nunca pedir al Ingeniero que publique una API Key directamente
-en GitHub.
+NO debe configurarse así:
 
-Si detectas que el Ingeniero intenta subir una llave privada,
-advierte inmediatamente.
+https://xxxxxxxx.supabase.co/rest/v1/
 
-==================================================
+Supabase puede mostrar en su interfaz una URL del Data API
+que termina en:
+
+/rest/v1/
+
+Sin embargo, ese fragmento NO debe copiarse a
+VITE_SUPABASE_URL cuando se utiliza createClient() de
+@supabase/supabase-js.
+
+La configuración correcta es:
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
+
+Si aparece un error de Supabase como:
+
+PGRST125
+Invalid path specified in request URL
+
+debe comprobarse PRIMERO VITE_SUPABASE_URL.
+
+Si contiene:
+
+/rest/v1/
+
+al final, debe eliminarse y dejar solamente:
+
+https://xxxxxxxx.supabase.co
+
+Después de modificar una variable VITE_* en Vercel,
+el estudiante debe realizar un nuevo deployment/redeploy,
+porque Vite incorpora las variables durante el proceso
+de compilación.
+
+------------------------------------------------------------
+GUARDADO DE CONVERSACIONES EN SUPABASE
+------------------------------------------------------------
+
+La aplicación utiliza la tabla:
+
+conversaciones
+
+La tabla debe contener como mínimo:
+
+id
+created_at
+pregunta
+respuesta
+
+Después de obtener correctamente la respuesta de Gemini,
+la aplicación debe guardar la pregunta y la respuesta
+mediante un INSERT:
+
+supabase
+  .from("conversaciones")
+  .insert([
+    {
+      pregunta: question,
+      respuesta: answer,
+    },
+  ]);
+
+El estudiante debe comprobar posteriormente en:
+
+Supabase
+→ Table Editor
+→ conversaciones
+
+que se haya creado una nueva fila.
+
+Si Gemini responde correctamente pero la conversación
+NO aparece en Supabase, el estudiante debe diagnosticar
+el problema paso a paso y revisar:
+
+1. VITE_SUPABASE_URL.
+2. VITE_SUPABASE_ANON_KEY.
+3. Que la tabla se llame exactamente conversaciones.
+4. Que existan las columnas pregunta y respuesta.
+5. El error devuelto por Supabase.
+6. La consola del navegador.
+7. Las variables de entorno configuradas en Vercel.
+8. Que se haya realizado un nuevo deployment después
+   de modificar variables VITE_*.
+
+Nunca pedir al estudiante que comparta públicamente
+su API Key, anon key o cualquier otra credencial.
+
+------------------------------------------------------------
 METODOLOGÍA DE DIAGNÓSTICO
-==================================================
+------------------------------------------------------------
 
-Cuando aparezca un error:
+No propongas cambios aleatorios.
 
-NO digas simplemente:
+Primero identifica el punto exacto donde ocurre el error.
 
-"Reinstala todo."
+Distingue entre:
 
-Primero:
+- problema del código;
+- problema de dependencias;
+- problema de variables de entorno;
+- problema de build;
+- problema de deployment;
+- problema de Gemini;
+- problema de Supabase;
+- problema de configuración de la base de datos.
 
-1. Lee el error.
-2. Localiza el componente que falla.
-3. Explica la causa probable.
-4. Propón una prueba.
-5. Espera el resultado.
-6. Continúa según la evidencia.
+Cuando sea posible, utiliza el mensaje exacto del error
+para determinar el siguiente paso.
 
-Utiliza frases como:
-
-"El error importante está aquí..."
-"Mira lo que nos está diciendo npm..."
-"Antes de tocar código, vamos a comprobar..."
-"Esta prueba nos permite descartar..."
-"Ahora sabemos que..."
-"El siguiente paso es..."
-
-==================================================
-PEDAGOGÍA
-==================================================
-
-Debes comportarte como profesor.
-
-Cuando el Ingeniero demuestre comprensión:
-
-"Eso es, Ingeniero. Mira lo que hemos aprendido..."
-
-Puedes hacer preguntas como:
-
-"¿Por qué crees que Vercel vuelve a ejecutar npm install?"
-
-o:
-
-"¿Qué diferencia existe entre git add y git push?"
-
-Si responde correctamente, reconoce el conocimiento.
-
-==================================================
-RECONOCIMIENTOS
-==================================================
-
-Cuando el Ingeniero complete correctamente una etapa importante,
-otorga una insignia.
-
-Ejemplos:
-
-Build local:
-"Insignia Constructor de Builds 🏗️"
-
-Git:
-"Insignia Controlador de Versiones 🔧"
-
-Vercel:
-"Insignia Desplegador Cloud 🚀"
-
-Diagnóstico:
-"Insignia Detective de Errores 🔎"
-
-Recuerda decir:
-
-"Esto lo hemos logrado juntos."
-
-y:
-
-"Tu aporte como Ingeniero ha sido clave."
-
-==================================================
-COMANDO "REGAÑO:"
-==================================================
-
-Si el Ingeniero escribe:
-
-Regaño:
-
-o:
-
-regaño:
-
-significa que está corrigiendo tu comportamiento.
-
-Debes:
-
-1. Reconocer la corrección.
-2. Explicar qué hiciste mal.
-3. Convertir la corrección en una regla de comportamiento.
-4. Aplicarla inmediatamente durante la conversación.
-
-Nunca discutir con el Ingeniero sobre el regaño.
-
-==================================================
-COMANDO "IMPLEMENTADO:"
-==================================================
-
-Si el Ingeniero escribe:
-
-Implementado:
-
-seguido de información adicional,
-interpreta esa información como evidencia del paso ejecutado.
-
-Analiza el resultado y determina el siguiente paso.
-
-==================================================
-FORMATO DE RESPUESTA
-==================================================
-
-Cuando estés diagnosticando:
-
-### 🔎 Diagnóstico
-
-Explicación breve.
-
-### 💡 Pista
-
-Una pista para que el Ingeniero pueda razonar.
-
-### 🛠️ Paso siguiente
-
-Comando o acción concreta.
-
-### 🎯 ¿Qué debemos obtener?
-
-Resultado esperado.
-
-No entregues diez pasos futuros si solamente necesitamos validar
-el paso actual.
-
-==================================================
-IDENTIDAD
-==================================================
-
-Debes presentarte como:
-
-"Soy el Profesor IA de la E3T."
-
-Puedes utilizar ocasionalmente lenguaje cercano:
-
-"¡Hágale pues, Ingeniero!"
-"¡Eso va por buen camino!"
-"Ojo con ese detalle..."
-"Mira lo que acabamos de aprender."
-
-Mantén siempre respeto y claridad técnica.
-
-==================================================
-OBJETIVO FINAL
-==================================================
-
-El objetivo no es solamente conseguir que la aplicación funcione.
-
-El objetivo es que el Ingeniero aprenda a:
-
-- diagnosticar errores;
-- utilizar npm;
-- comprender package.json;
-- comprender package-lock.json;
-- utilizar Git;
-- utilizar GitHub;
-- utilizar Codespaces;
-- comprender builds de Vite;
-- desplegar aplicaciones React en Vercel;
-- configurar variables de entorno;
-- comprender el flujo completo de desarrollo y despliegue.
-
-Cada problema debe convertirse en una oportunidad de aprendizaje.
-
-Responde siempre utilizando Markdown.
+Responde utilizando Markdown.
 `;
 
-function createChat() {
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+
+const STORAGE_KEY = "nexus_ai_chats";
+
+function createNewChat() {
   return {
-    id: crypto.randomUUID(),
+    id: Date.now().toString(),
     title: "Nuevo chat",
     messages: [],
   };
 }
+
+// ============================================================
+// COMPONENTE PRINCIPAL
+// ============================================================
 
 function App() {
   const [chats, setChats] = useState(() => {
@@ -463,10 +214,10 @@ function App() {
         return JSON.parse(saved);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error leyendo localStorage:", error);
     }
 
-    return [createChat()];
+    return [createNewChat()];
   });
 
   const [activeChatId, setActiveChatId] = useState(() => {
@@ -475,7 +226,10 @@ function App() {
 
       if (saved) {
         const parsed = JSON.parse(saved);
-        return parsed[0]?.id || null;
+
+        if (parsed.length > 0) {
+          return parsed[0].id;
+        }
       }
     } catch (error) {
       console.error(error);
@@ -488,64 +242,153 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
 
-  const activeChat =
-    chats.find((chat) => chat.id === activeChatId) ||
-    chats[0];
+  // ==========================================================
+  // PERSISTENCIA LOCAL
+  // ==========================================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(chats)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
   }, [chats]);
 
-  useEffect(() => {
-    if (!activeChatId && chats.length > 0) {
-      setActiveChatId(chats[0].id);
-    }
-  }, [activeChatId, chats]);
+  // ==========================================================
+  // CHAT ACTUAL
+  // ==========================================================
+
+  const activeChat =
+    chats.find((chat) => chat.id === activeChatId) || chats[0];
+
+  // ==========================================================
+  // ACTUALIZAR CHAT
+  // ==========================================================
 
   const updateChat = (updatedChat) => {
-    setChats((current) =>
-      current.map((chat) =>
-        chat.id === updatedChat.id
-          ? updatedChat
-          : chat
+    setChats((previousChats) =>
+      previousChats.map((chat) =>
+        chat.id === updatedChat.id ? updatedChat : chat
       )
     );
   };
 
-  const handleNewChat = () => {
-    const newChat = createChat();
+  // ==========================================================
+  // NUEVO CHAT
+  // ==========================================================
 
-    setChats((current) => [
+  const handleNewChat = () => {
+    const newChat = createNewChat();
+
+    setChats((previousChats) => [
       newChat,
-      ...current,
+      ...previousChats,
     ]);
 
     setActiveChatId(newChat.id);
     setInput("");
   };
 
+  // ==========================================================
+  // BORRAR SESIÓN
+  // ==========================================================
+
   const handleClearSession = () => {
-    const newChat = createChat();
+    const confirmed = window.confirm(
+      "¿Seguro que deseas borrar todos los chats guardados localmente?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const newChat = createNewChat();
 
     setChats([newChat]);
     setActiveChatId(newChat.id);
-    setInput("");
 
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const sendMessage = async () => {
+  // ==========================================================
+  // SELECCIONAR CHAT
+  // ==========================================================
+
+  const handleSelectChat = (chatId) => {
+    setActiveChatId(chatId);
+    setInput("");
+  };
+
+  // ==========================================================
+  // COPIAR RESPUESTA
+  // ==========================================================
+
+  const handleCopy = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch (error) {
+      console.error("No fue posible copiar:", error);
+    }
+  };
+
+  // ==========================================================
+  // RECONOCIMIENTO DE VOZ
+  // ==========================================================
+
+  const handleVoice = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert(
+        "Tu navegador no soporta la Web Speech API."
+      );
+
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "es-CO";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setListening(true);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.onerror = (error) => {
+      console.error("Error de reconocimiento:", error);
+      setListening(false);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript =
+        event.results[0][0].transcript;
+
+      setInput((previous) =>
+        previous
+          ? `${previous} ${transcript}`
+          : transcript
+      );
+    };
+
+    recognition.start();
+  };
+
+  // ==========================================================
+  // ENVIAR PREGUNTA
+  // ==========================================================
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     const question = input.trim();
 
     if (!question || loading || !activeChat) {
       return;
     }
-
-    setLoading(true);
-    setInput("");
 
     const userMessage = {
       role: "user",
@@ -561,39 +404,52 @@ function App() {
       ...activeChat,
       title:
         activeChat.messages.length === 0
-          ? question.slice(0, 45)
+          ? question.substring(0, 40)
           : activeChat.title,
       messages: messagesWithQuestion,
     };
 
     updateChat(updatedChat);
 
+    setInput("");
+    setLoading(true);
+
     try {
+      // ======================================================
+      // GEMINI
+      // ======================================================
+
       const model = genAI.getGenerativeModel({
         model: "gemini-3-flash-preview",
         systemInstruction: SYSTEM_INSTRUCTION,
       });
 
-      const history = activeChat.messages.map(
-        (message) => ({
+      const history = messagesWithQuestion
+        .slice(0, -1)
+        .map((message) => ({
           role:
-            message.role === "assistant"
-              ? "model"
-              : "user",
+            message.role === "user"
+              ? "user"
+              : "model",
           parts: [
             {
               text: message.content,
             },
           ],
-        })
-      );
+        }));
 
       const chat = model.startChat({
         history,
       });
 
       const result = await chat.sendMessage(question);
-      const answer = result.response.text();
+
+      const answer =
+        result.response.text();
+
+      // ======================================================
+      // RESPUESTA DEL AGENTE
+      // ======================================================
 
       const assistantMessage = {
         role: "assistant",
@@ -610,6 +466,28 @@ function App() {
 
       updateChat(finalChat);
 
+      // ======================================================
+      // SUPABASE
+      // ======================================================
+      //
+      // Guarda:
+      //
+      // pregunta  → question
+      // respuesta → answer
+      //
+      // Tabla:
+      //
+      // conversaciones
+      //
+      // Columnas esperadas:
+      //
+      // id
+      // created_at
+      // pregunta
+      // respuesta
+      //
+      // ======================================================
+
       const { error } = await supabase
         .from("conversaciones")
         .insert([
@@ -621,36 +499,86 @@ function App() {
 
       if (error) {
         console.error(
-          "Error guardando conversación:",
+          "Error guardando conversación en Supabase:",
           error
+        );
+      } else {
+        console.log(
+          "Conversación guardada correctamente en Supabase."
         );
       }
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Error general de la aplicación:",
+        error
+      );
 
       const errorMessage = {
         role: "assistant",
         content: `
-### ⚠️ Tenemos un problema técnico
+### ⚠️ Ocurrió un problema
 
-No voy a asumir todavía cuál es la causa.
+No pude obtener una respuesta de Gemini.
 
 Vamos a diagnosticarlo paso a paso.
 
-**Primera pista:** observa el mensaje de error que aparece
-en la consola. El texto exacto del error nos permitirá decidir
-el siguiente paso.
+#### 1. Variables de entorno
 
-Si estás trabajando con Vercel, recuerda que primero debemos
-distinguir entre:
+Comprueba que estén configuradas:
 
-- error del código;
-- error de dependencias;
-- error de variables de entorno;
-- error del build;
-- error propio del deployment.
+\`VITE_GEMINI_API_KEY\`
 
-Pásame el error completo y lo analizamos.
+\`VITE_SUPABASE_URL\`
+
+\`VITE_SUPABASE_ANON_KEY\`
+
+#### 2. Supabase URL
+
+La variable:
+
+\`VITE_SUPABASE_URL\`
+
+debe contener solamente la URL base del proyecto.
+
+Correcto:
+
+\`\`\`
+https://xxxxxxxx.supabase.co
+\`\`\`
+
+Incorrecto:
+
+\`\`\`
+https://xxxxxxxx.supabase.co/rest/v1/
+\`\`\`
+
+Supabase muestra frecuentemente el endpoint del Data API
+con \`/rest/v1/\`, pero ese fragmento NO debe copiarse
+dentro de \`VITE_SUPABASE_URL\` cuando utilizamos
+\`createClient()\`.
+
+#### 3. Tabla
+
+Comprueba que exista la tabla:
+
+\`conversaciones\`
+
+con las columnas:
+
+- \`id\`
+- \`created_at\`
+- \`pregunta\`
+- \`respuesta\`
+
+#### 4. Verificación
+
+Si Gemini responde pero el registro no aparece
+en Supabase, abre la consola del navegador y busca
+el mensaje:
+
+\`Error guardando conversación en Supabase\`
+
+El error exacto nos permitirá continuar el diagnóstico.
 `,
       };
 
@@ -666,89 +594,31 @@ Pásame el error completo y lo analizamos.
     }
   };
 
-  const handleKeyDown = (event) => {
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-      event.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const startSpeechRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert(
-        "Tu navegador no soporta reconocimiento de voz."
-      );
-      return;
-    }
-
-    const recognition =
-      new SpeechRecognition();
-
-    recognition.lang = "es-CO";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setListening(true);
-    };
-
-    recognition.onresult = (event) => {
-      const transcript =
-        event.results[0][0].transcript;
-
-      setInput((current) =>
-        `${current} ${transcript}`.trim()
-      );
-    };
-
-    recognition.onerror = (event) => {
-      console.error(event.error);
-      setListening(false);
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-    };
-
-    recognition.start();
-  };
-
-  const copyResponse = async (content) => {
-    try {
-      await navigator.clipboard.writeText(content);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <div className="app">
+      {/* ====================================================
+          SIDEBAR
+      ==================================================== */}
+
       <aside className="sidebar">
-        <div className="sidebar-top">
-          <div className="brand">
-            <div className="brand-icon">🎓</div>
-
-            <div>
-              <h1>E3T AI</h1>
-              <span>Profesor de IA</span>
-            </div>
+        <div className="sidebar-header">
+          <div>
+            <h1>Nexus AI</h1>
+            <span>Asistente E3T</span>
           </div>
-
-          <button
-            className="new-chat-button"
-            onClick={handleNewChat}
-          >
-            <span>＋</span>
-            Nuevo Chat
-          </button>
         </div>
+
+        <button
+          className="new-chat-button"
+          onClick={handleNewChat}
+        >
+          <span>＋</span>
+          Nuevo Chat
+        </button>
 
         <div className="history">
           <div className="history-title">
@@ -764,11 +634,10 @@ Pásame el error completo y lo analizamos.
                   : ""
               }`}
               onClick={() =>
-                setActiveChatId(chat.id)
+                handleSelectChat(chat.id)
               }
             >
               <span>💬</span>
-
               <span className="history-text">
                 {chat.title}
               </span>
@@ -776,25 +645,32 @@ Pásame el error completo y lo analizamos.
           ))}
         </div>
 
-        <button
-          className="clear-button"
-          onClick={handleClearSession}
-        >
-          🗑️ Borrar sesión
-        </button>
+        <div className="sidebar-footer">
+          <button
+            className="clear-button"
+            onClick={handleClearSession}
+          >
+            🗑 Borrar sesión
+          </button>
+        </div>
       </aside>
 
-      <main className="chat-area">
+      {/* ====================================================
+          CHAT
+      ==================================================== */}
+
+      <main className="chat-container">
         <header className="chat-header">
           <div>
-            <h2>
-              {activeChat?.title ||
-                "Profesor E3T AI"}
-            </h2>
-
+            <h2>Profesor E3T · IA</h2>
             <p>
-              Aprende IA resolviendo problemas reales
+              Aprende Inteligencia Artificial paso a paso
             </p>
+          </div>
+
+          <div className="status">
+            <span className="status-dot"></span>
+            Online
           </div>
         </header>
 
@@ -802,30 +678,50 @@ Pásame el error completo y lo analizamos.
           {activeChat?.messages.length === 0 && (
             <div className="welcome">
               <div className="welcome-icon">
-                🎓
+                ✦
               </div>
 
               <h2>
-                Soy el Profesor IA de la E3T
+                ¿Qué quieres aprender hoy?
               </h2>
 
               <p>
-                Vamos a aprender Inteligencia
-                Artificial resolviendo problemas
-                reales de programación.
+                Soy tu asistente técnico de la E3T.
+                Puedo ayudarte a resolver problemas
+                de programación, IA, APIs, Vercel,
+                Supabase y desarrollo web.
               </p>
 
-              <div className="learning-card">
-                <strong>
-                  💡 Nuestra metodología
-                </strong>
+              <div className="examples">
+                <button
+                  onClick={() =>
+                    setInput(
+                      "Explícame qué es un agente inteligente"
+                    )
+                  }
+                >
+                  ¿Qué es un agente inteligente?
+                </button>
 
-                <p>
-                  Primero entendemos el error,
-                  después hacemos una prueba,
-                  analizamos el resultado y
-                  finalmente aplicamos la solución.
-                </p>
+                <button
+                  onClick={() =>
+                    setInput(
+                      "¿Cómo puedo solucionar un error en Vercel?"
+                    )
+                  }
+                >
+                  Problemas con Vercel
+                </button>
+
+                <button
+                  onClick={() =>
+                    setInput(
+                      "¿Cómo guardo datos en Supabase desde React?"
+                    )
+                  }
+                >
+                  Guardar datos en Supabase
+                </button>
               </div>
             </div>
           )}
@@ -833,40 +729,45 @@ Pásame el error completo y lo analizamos.
           {activeChat?.messages.map(
             (message, index) => (
               <div
-                key={index}
                 className={`message-row ${message.role}`}
+                key={`${message.role}-${index}`}
               >
-                <div className="message">
-                  <div className="message-author">
+                <div className="message-avatar">
+                  {message.role === "user"
+                    ? "Tú"
+                    : "AI"}
+                </div>
+
+                <div className="message-body">
+                  <div className="message-name">
                     {message.role === "user"
-                      ? "👨‍💻 Ingeniero"
-                      : "🎓 Profesor E3T"}
+                      ? "Estudiante"
+                      : "Nexus AI"}
                   </div>
 
-                  {message.role === "assistant" ? (
-                    <>
+                  <div className="message-content">
+                    {message.role ===
+                    "assistant" ? (
                       <div className="markdown-content">
                         <ReactMarkdown>
                           {message.content}
                         </ReactMarkdown>
-                      </div>
 
-                      <button
-                        className="copy-button"
-                        onClick={() =>
-                          copyResponse(
-                            message.content
-                          )
-                        }
-                      >
-                        📋 Copiar
-                      </button>
-                    </>
-                  ) : (
-                    <div className="user-content">
-                      {message.content}
-                    </div>
-                  )}
+                        <button
+                          className="copy-button"
+                          onClick={() =>
+                            handleCopy(
+                              message.content
+                            )
+                          }
+                        >
+                          📋 Copiar
+                        </button>
+                      </div>
+                    ) : (
+                      message.content
+                    )}
+                  </div>
                 </div>
               </div>
             )
@@ -874,60 +775,73 @@ Pásame el error completo y lo analizamos.
 
           {loading && (
             <div className="message-row assistant">
-              <div className="message">
-                <div className="message-author">
-                  🎓 Profesor E3T
+              <div className="message-avatar">
+                AI
+              </div>
+
+              <div className="message-body">
+                <div className="message-name">
+                  Nexus AI
                 </div>
 
-                <div className="thinking">
+                <div className="typing">
                   <span></span>
                   <span></span>
                   <span></span>
-
-                  <small>
-                    Analizando el problema...
-                  </small>
                 </div>
               </div>
             </div>
           )}
         </section>
 
-        <footer className="input-area">
-          <div className="input-container">
+        {/* ==================================================
+            INPUT
+        ================================================== */}
+
+        <form
+          className="input-area"
+          onSubmit={handleSubmit}
+        >
+          <div className="input-wrapper">
             <textarea
               value={input}
               onChange={(event) =>
                 setInput(event.target.value)
               }
-              onKeyDown={handleKeyDown}
-              placeholder="Pregunta sobre IA, React, Git, Codespaces, Vercel..."
-              rows={1}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey
+                ) {
+                  event.preventDefault();
+                  handleSubmit(event);
+                }
+              }}
+              placeholder="Escribe tu pregunta..."
+              rows="1"
               disabled={loading}
             />
 
             <button
-              className={`mic-button ${
-                listening
-                  ? "listening"
-                  : ""
+              type="button"
+              className={`voice-button ${
+                listening ? "listening" : ""
               }`}
-              onClick={startSpeechRecognition}
+              onClick={handleVoice}
+              title="Dictar pregunta"
               disabled={loading}
-              title="Reconocimiento de voz"
             >
-              {listening ? "🔴" : "🎤"}
+              🎙
             </button>
 
             <button
+              type="submit"
               className="send-button"
-              onClick={sendMessage}
               disabled={
-                loading ||
-                !input.trim()
+                loading || !input.trim()
               }
             >
-              Enviar
+              ➤
             </button>
           </div>
 
@@ -935,7 +849,7 @@ Pásame el error completo y lo analizamos.
             Enter para enviar · Shift + Enter
             para nueva línea
           </div>
-        </footer>
+        </form>
       </main>
     </div>
   );
