@@ -13,7 +13,8 @@
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.112.3",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
