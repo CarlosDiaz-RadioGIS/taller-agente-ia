@@ -623,12 +623,11 @@ button {
 
   .sidebar-header h1,
   .sidebar-header span,
-  .new-chat-button:not(:first-letter),
   .history-title,
   .history-text,
   .clear-button {
-    font-size: 0;
-  }
+  font-size: 0;
+}
 
   .new-chat-button {
     justify-content: center;
