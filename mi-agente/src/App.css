@@ -36,9 +36,7 @@ button {
   cursor: pointer;
 }
 
-/* =========================================
-   APLICACIÓN
-========================================= */
+/* APP */
 
 .app {
   display: flex;
@@ -48,24 +46,20 @@ button {
   background: #ffffff;
 }
 
-/* =========================================
-   SIDEBAR
-========================================= */
+/* SIDEBAR */
 
 .sidebar {
   display: flex;
   flex-direction: column;
+
   width: 280px;
   height: 100%;
   padding: 20px;
+
   flex-shrink: 0;
 
   background: #09090b;
   color: #ffffff;
-}
-
-.sidebar-top {
-  flex-shrink: 0;
 }
 
 .brand {
@@ -84,6 +78,7 @@ button {
   height: 42px;
 
   border-radius: 10px;
+
   background: #18181b;
 
   font-size: 23px;
@@ -92,9 +87,7 @@ button {
 .brand h1 {
   margin: 0;
 
-  color: #ffffff;
   font-size: 20px;
-  font-weight: 700;
 }
 
 .brand span {
@@ -119,24 +112,19 @@ button {
   background: #18181b;
   color: #ffffff;
 
-  transition: 0.2s ease;
+  transition: 0.2s;
 }
 
 .new-chat-button:hover {
   background: #27272a;
 }
 
-.new-chat-button span {
-  font-size: 20px;
-}
-
-/* =========================================
-   HISTORIAL
-========================================= */
+/* HISTORY */
 
 .history {
   flex: 1;
   min-height: 0;
+
   margin-top: 28px;
 
   overflow-y: auto;
@@ -149,6 +137,7 @@ button {
 
   font-size: 11px;
   font-weight: 700;
+
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -169,8 +158,6 @@ button {
   color: #d4d4d8;
 
   text-align: left;
-
-  transition: 0.2s ease;
 }
 
 .history-item:hover,
@@ -187,8 +174,6 @@ button {
 }
 
 .clear-button {
-  flex-shrink: 0;
-
   width: 100%;
   margin-top: 15px;
   padding: 10px;
@@ -198,8 +183,6 @@ button {
 
   background: transparent;
   color: #a1a1aa;
-
-  transition: 0.2s ease;
 }
 
 .clear-button:hover {
@@ -207,9 +190,7 @@ button {
   color: #ffffff;
 }
 
-/* =========================================
-   ÁREA PRINCIPAL
-========================================= */
+/* CHAT */
 
 .chat-area {
   display: flex;
@@ -223,9 +204,6 @@ button {
 }
 
 .chat-header {
-  display: flex;
-  align-items: center;
-
   min-height: 72px;
   padding: 14px 30px;
 
@@ -235,10 +213,7 @@ button {
 .chat-header h2 {
   margin: 0;
 
-  color: #18181b;
-
   font-size: 18px;
-  font-weight: 650;
 }
 
 .chat-header p {
@@ -248,9 +223,7 @@ button {
   font-size: 13px;
 }
 
-/* =========================================
-   MENSAJES
-========================================= */
+/* MESSAGES */
 
 .messages {
   flex: 1;
@@ -262,6 +235,7 @@ button {
 
 .message-row {
   display: flex;
+
   width: 100%;
   margin-bottom: 24px;
 }
@@ -302,12 +276,11 @@ button {
   word-break: break-word;
 }
 
-/* =========================================
-   PANTALLA DE BIENVENIDA
-========================================= */
+/* WELCOME */
 
 .welcome {
   max-width: 700px;
+
   margin: 80px auto;
 
   text-align: center;
@@ -322,14 +295,10 @@ button {
 .welcome h2 {
   margin: 0 0 12px;
 
-  color: #18181b;
-
   font-size: 28px;
 }
 
 .welcome > p {
-  margin: 0;
-
   color: #71717a;
 
   line-height: 1.7;
@@ -347,21 +316,15 @@ button {
   text-align: left;
 }
 
-.learning-card strong {
-  color: #27272a;
-}
-
 .learning-card p {
-  margin: 8px 0 0;
+  margin-bottom: 0;
 
   color: #71717a;
 
   line-height: 1.6;
 }
 
-/* =========================================
-   MARKDOWN
-========================================= */
+/* MARKDOWN */
 
 .markdown-content {
   line-height: 1.7;
@@ -372,21 +335,11 @@ button {
   margin: 0 0 14px;
 }
 
-.markdown-content p:last-child {
-  margin-bottom: 0;
-}
-
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3 {
   margin-top: 22px;
   margin-bottom: 10px;
-}
-
-.markdown-content h1:first-child,
-.markdown-content h2:first-child,
-.markdown-content h3:first-child {
-  margin-top: 0;
 }
 
 .markdown-content ul,
@@ -396,10 +349,6 @@ button {
 
 .markdown-content li {
   margin-bottom: 5px;
-}
-
-.markdown-content a {
-  color: #2563eb;
 }
 
 .markdown-content code {
@@ -414,8 +363,6 @@ button {
     Consolas,
     "Courier New",
     monospace;
-
-  font-size: 0.9em;
 }
 
 .markdown-content pre {
@@ -456,9 +403,7 @@ button {
   color: #71717a;
 }
 
-/* =========================================
-   BOTÓN COPIAR
-========================================= */
+/* COPY */
 
 .copy-button {
   margin-top: 12px;
@@ -471,17 +416,13 @@ button {
   color: #52525b;
 
   font-size: 12px;
-
-  transition: 0.2s ease;
 }
 
 .copy-button:hover {
   background: #f4f4f5;
 }
 
-/* =========================================
-   ESTADO DE PENSAMIENTO
-========================================= */
+/* THINKING */
 
 .thinking {
   display: flex;
@@ -512,8 +453,6 @@ button {
 
 .thinking small {
   margin-left: 8px;
-
-  font-size: 13px;
 }
 
 @keyframes pulse {
@@ -527,9 +466,7 @@ button {
   }
 }
 
-/* =========================================
-   INPUT
-========================================= */
+/* INPUT */
 
 .input-area {
   padding: 18px 30px 20px;
@@ -551,10 +488,6 @@ button {
 
   border: 1px solid #d4d4d8;
   border-radius: 12px;
-
-  background: #ffffff;
-
-  transition: 0.2s ease;
 }
 
 .input-container:focus-within {
@@ -576,13 +509,7 @@ button {
 
   background: transparent;
 
-  color: #18181b;
-
   line-height: 1.5;
-}
-
-.input-container textarea::placeholder {
-  color: #a1a1aa;
 }
 
 .mic-button,
@@ -591,8 +518,6 @@ button {
 
   border: 0;
   border-radius: 8px;
-
-  transition: 0.2s ease;
 }
 
 .mic-button {
@@ -602,10 +527,6 @@ button {
 }
 
 .mic-button:hover {
-  background: #e4e4e7;
-}
-
-.mic-button.listening {
   background: #e4e4e7;
 }
 
@@ -623,11 +544,13 @@ button {
 .send-button:disabled,
 .mic-button:disabled {
   cursor: not-allowed;
+
   opacity: 0.4;
 }
 
 .input-help {
   max-width: 900px;
+
   margin: 8px auto 0;
 
   color: #a1a1aa;
@@ -636,9 +559,7 @@ button {
   text-align: center;
 }
 
-/* =========================================
-   RESPONSIVE
-========================================= */
+/* RESPONSIVE */
 
 @media (max-width: 760px) {
   .sidebar {
@@ -660,10 +581,6 @@ button {
   .welcome {
     margin-top: 40px;
   }
-
-  .welcome h2 {
-    font-size: 23px;
-  }
 }
 
 @media (max-width: 560px) {
@@ -674,12 +591,6 @@ button {
 
   .brand h1 {
     font-size: 17px;
-  }
-
-  .brand-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 19px;
   }
 
   .message {
